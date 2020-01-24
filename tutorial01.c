@@ -29,6 +29,50 @@ int main(int argc, char* argv[]) {
   if (avformat_find_stream_info(pFormatCtx, NULL) < 0)
     return -1; // could not find stream information
 
-  // dumps information about the file on stderr
+  // dumps information about the file on stdout
   av_dump_format(pFormatCtx, 0, argv[1], 0);
+
+  int i; 
+  AVCodecContext* pCodecCtxOrig = NULL;
+  AVCodexContext* pCodecCtx = NULL;
+
+  // Find the 1st video stream
+  videoStream = -1;
+  for (int i = 0; i < pFormatContext->nb_streams; i++) {
+    if (pFormatCtx->streams[i]->codec->codec_type == AVMEDIA_TYPE_VIDEO) {
+      videoStream = i;
+      break;
+    }
+  }
+
+  if (videoStream == -1) 
+    return -1; // :( didn't find a video stream
+
+  // get a pointer to the codec context for the video stream
+  pCodecCtx = pFormatCtx->streams[videoStream]->codec;
+
+  AVCodec* pCodec = NULL;
+  // find the right decoder for this video stream
+  pCodec = avcodec_find_decoder(pCodecCtx->codec_id);
+  if (pCodec == NULL) {
+    fprintf(stderr, "Unsupported codec!\n");
+    return -1;
+  }
+
+  // Copy the context
+  pCodecCtx = avcodec_alloc_context3(pCodec);
+  if (avcodec_copy_context(pCodecCtx, pCodecCtxOrig) != 0) {
+    fprintf(stderr, "Couldn't copy codec context\n");
+    return -1;
+  }
+  if (avcodec_open2(pCodecCtx, pCodec) < 0)
+    return -1; // couldn't open the codec
+
+  AVFrame* pFrame = NULL;
+  pFrame = av_frame_alloc();
+
+  // Allocate an AVFrame struct
+  pFrameRGB = av_frame_alloc();
+  if(pFrameRGB == NULL)
+    return -1;
 }
