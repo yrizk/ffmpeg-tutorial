@@ -1,6 +1,6 @@
 #include <libavcodec/avcodec.h>
 #include <libavformat/avformat.h>
-#include <ffmpeg/swscale.h>
+#include <libswscale/swscale.h>
 
 #include <stdio.h>
 
@@ -15,8 +15,14 @@ int main(int argc, char* argv[]) {
 
   AVFormatContext* pFormatCtx = NULL;
 
-  // open video file
-  if (avformat_open_input(&pFormatCtx, argv[1] /* filename */, NULL /* file format, set to autodetect */, 0 /* buffer size, set to autodetect */, NULL /*format options, set to autodetect*/) != 0)
+  /* open video file
+   * Args:
+   *  - AVFormatContext* 
+   *  - argv[1] filename to open
+   *  - file format: NULL to autodetect
+   *  - format options: NULL to autodetect
+   */
+  if (avformat_open_input(&pFormatCtx, argv[1], NULL, NULL) != 0)
     return -1; // Couldn't open file :(
 
   // Retreive Stream information and populate it into pFormatCtx
